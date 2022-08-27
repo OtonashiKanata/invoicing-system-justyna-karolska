@@ -13,6 +13,7 @@ class TestHelpers {
         new Company(("$id").repeat(10),
                 "u200 Industrial Ave, $id Long Beach, CA 90803",
                 "Stark Industries $id Sp. z o.o");
+
     }
 
     static product(int id) {
@@ -20,6 +21,10 @@ class TestHelpers {
     }
 
     static invoice(int id) {
+        new Invoice(LocalDate.now(), company(id), company(id), List.of(product(id)))
+    }
+
+    static updatedInvoice(int id) {
         new Invoice(LocalDate.now(), company(id), company(id), List.of(product(id)))
     }
 }

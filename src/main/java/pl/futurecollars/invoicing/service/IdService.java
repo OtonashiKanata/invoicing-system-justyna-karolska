@@ -5,14 +5,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import pl.futurecollars.invoicing.db.file.FilesService;
 
 public class IdService {
 
-  private static int id = 1;
   private final Path idFilePath;
+  private final FilesService filesService;
+  private int id = 1;
 
-  public IdService(Path idFilePath) {
+  IdService(Path idFilePath, FilesService filesService) {
     this.idFilePath = idFilePath;
+    this.filesService = filesService;
+
     try {
       File idFile = new File(String.valueOf(idFilePath));
       if (!idFile.exists() || Files.readString(Paths.get(String.valueOf(idFilePath))).isEmpty()) {
@@ -35,11 +39,14 @@ public class IdService {
     return id;
   }
 
-  public void setId() {
+  public int setId() {
     try {
       Files.writeString(idFilePath, String.valueOf(getId() + 1));
     } catch (IOException exception) {
       exception.printStackTrace();
     }
+    return id++;
+
   }
 }
+

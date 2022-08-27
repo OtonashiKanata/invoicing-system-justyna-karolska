@@ -1,66 +1,61 @@
 package pl.futurecollars.invoicing.service
 
+import pl.futurecollars.invoicing.db.file.FilesService
+import pl.futurecollars.invoicing.service.IdService
 import spock.lang.Specification
 
 import java.nio.file.Files
 import java.nio.file.Path
 
-class IdServiceTest extends Specification{
+class IdServiceIntegrationTest extends Specification {
 
-    private Path nextIdPath = File.createTempFile('nextId', 'txt').toPath()
+    private Path nextIdDbPath = File.createTempFile('nextId', '.txt').toPath()
 
-    def "if file was empty, next id starts from 1"() {
+    def "next id starts from 1 if file was empty"() {
         given:
-        IdService idService = new IdService(nextIdPath)
+        IdService idService = new IdService(nextIdDbPath, new FilesService())
 
         expect:
-        ['1'] == Files.readAllLines(nextIdPath)
+        ['1'] == Files.readAllLines(nextIdDbPath)
 
         and:
-        idService.setId()
-        ['2'] == Files.readAllLines(nextIdPath)
+        1L == idService.setId()
+        ['2'] == Files.readAllLines(nextIdDbPath)
 
         and:
-        idService.setId()
-        ['3'] == Files.readAllLines(nextIdPath)
+        2L == idService.setId()
+        ['3'] == Files.readAllLines(nextIdDbPath)
 
+        and:
+        3L == idService.setId()
+        ['4'] == Files.readAllLines(nextIdDbPath)
     }
 
     def "if file was not empty, next id starts from last number"() {
         given:
-        Files.writeString(nextIdPath, "666")
-        IdService idService = new IdService(nextIdPath)
+        Files.writeString(nextIdDbPath, "666")
+        IdService idService = new IdService(nextIdDbPath, new FilesService())
 
         expect:
-        ['666'] == Files.readAllLines(nextIdPath)
+        ['666'] == Files.readAllLines(nextIdDbPath)
 
         and:
         idService.setId()
-        ['667'] == Files.readAllLines(nextIdPath)
+        ['667'] == Files.readAllLines(nextIdDbPath)
 
         and:
         idService.setId()
-        ['668'] == Files.readAllLines(nextIdPath)
+        ['668'] == Files.readAllLines(nextIdDbPath)
 
         and:
         idService.setId()
-        ['669'] == Files.readAllLines(nextIdPath)
+        ['669'] == Files.readAllLines(nextIdDbPath)
 
     }
 
     def "empty file returns empty collection"() {
         expect:
-        [] == Files.readAllLines(nextIdPath)
-    }
-
-    def "if file was empty, creates new file"() {
-        given:
-        IdService idService = new IdService(nextIdPath)
-        Files.deleteIfExists(nextIdPath)
-
-        expect:
-        Files.createFile(nextIdPath)
-
+        [] == Files.readAllLines(nextIdDbPath)
     }
 
 }

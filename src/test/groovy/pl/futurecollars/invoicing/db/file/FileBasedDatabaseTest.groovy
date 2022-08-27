@@ -3,85 +3,123 @@ package pl.futurecollars.invoicing.db.memory
 import pl.futurecollars.invoicing.TestHelpers
 import pl.futurecollars.invoicing.db.Database
 import pl.futurecollars.invoicing.db.file.FileBasedDatabase
+import pl.futurecollars.invoicing.db.file.FilesService
+import pl.futurecollars.invoicing.model.Invoice
 import pl.futurecollars.invoicing.service.IdService
-
+import pl.futurecollars.invoicing.service.JsonService
+import java.nio.file.NoSuchFileException
+import spock.lang.Specification
 
 import java.nio.file.Files
+import java.nio.file.Path
 
-class FileBasedDatabaseTest extends DatabaseTest {
+class FileBasedDatabaseTest extends Specification {
 
-    def dbPath
+    Path idServiceTestingPath = Path.of("src/test/groovy/pl/futurecollars/invoicing/db/file/testingId.txt")
+    Path FileBasedDatabaseTestingPath = Path.of("src/test/groovy/pl/futurecollars/invoicing/db/file/testingInvoices.json")
+    FilesService filesService = new FilesService()
+    JsonService jsonService = new JsonService()
+    IdService idService = new IdService(idServiceTestingPath, filesService)
+    Database FileBasedDatabase = new FileBasedDatabase(FileBasedDatabaseTestingPath, idService, filesService, jsonService)
+    Database wrongPathDatabase = new FileBasedDatabase(Path.of("wrongPath"), idService, filesService, jsonService)
+    Invoice invoice = TestHelpers.invoice(1)
+    Invoice updatedInvoice = TestHelpers.updatedInvoice(2)
 
-    @Override
-    Database getDatabaseInstance() {
-        def idPath = File.createTempFile('ids', '.txt').toPath()
-        dbPath = File.createTempFile('invoices', '.txt').toPath()
-
-        return new FileBasedDatabase(new File(dbPath as String), dbPath, new IdService(idPath))
+    def cleanup() {
+        Files.write(FileBasedDatabaseTestingPath, [])
+        Files.write(idServiceTestingPath, [])
     }
 
-    def "FileBasedDatabase save invoices in correct file"() {
-        given:
-        def db = getDatabaseInstance()
-
+    def "should save invoice"() {
         when:
-        db.save(TestHelpers.invoice(7))
+        def result = FileBasedDatabase.save(invoice)
 
         then:
-        1 == Files.readAllLines(dbPath).size()
-
-        when:
-        db.save(TestHelpers.invoice(8))
-
-        then:
-        2 == Files.readAllLines(dbPath).size()
+        result == 1
     }
 
-    def "should return exception when can't get invoices from database"() {
-
-        given:
-        def db = getDatabaseInstance()
-        Files.deleteIfExists(dbPath)
-
+    def "should throw exception with message 'Failed to save invoice'"() {
         when:
-        db.getAll()
+        wrongPathDatabase.save(invoice)
 
         then:
-        RuntimeException exception = thrown(RuntimeException)
-        exception.message == "Getting all invoices from database failed"
-
+        def exception = thrown(RuntimeException)
+        exception.message == "Saving invoice to database failed"
+        exception.cause.class == NoSuchFileException
+        exception.cause.message == "wrongPath"
     }
 
-    def "1"() {
-
-        given:
-        def db = getDatabaseInstance()
-        Files.deleteIfExists(dbPath)
-
-
+    def "should get invoice by id"() {
         when:
-        db.update(4, TestHelpers.invoice(4))
+        FileBasedDatabase.save(invoice)
+        def result = FileBasedDatabase.getById(1)
 
         then:
-        RuntimeException exception = thrown(RuntimeException)
-        exception.message == "Getting all invoices from database failed"
-
+        result.isPresent()
+        result.toString().contains("Optional[Invoice(id=1, date=2022-08-27, buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
-    def "should return exception when can't delete invoices from database"() {
-
-        given:
-        def db = getDatabaseInstance()
-        Files.deleteIfExists(dbPath)
-
-
+    def "should throw exception with message 'Failed to get invoice with id: 1"() {
         when:
-        db.delete(2)
+        wrongPathDatabase.getById(1)
 
         then:
-        RuntimeException exception = thrown(RuntimeException)
+        def exception = thrown(RuntimeException)
+        exception.message == "Failed to get invoice with id: 1"
+        exception.cause.class == NoSuchFileException
+        exception.cause.message == "wrongPath"
+    }
+
+    def "should update invoice"() {
+        given:
+        FileBasedDatabase.save(invoice)
+
+        when:
+        FileBasedDatabase.update(1, updatedInvoice)
+        def result = FileBasedDatabase.getById(1)
+
+        then:
+        result.isPresent()
+        result.toString().contains("id=1")
+        result.toString().contains("Optional[Invoice(id=1, date=2022-08-27, buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
+    }
+
+    def "should throw exception with message 'Id 34 does not exist'"() {
+        when:
+        FileBasedDatabase.update(34, updatedInvoice)
+
+        then:
+        def exception = thrown(RuntimeException)
+        exception.message == "Invoice id: 34 doesn't exist"
+    }
+
+    def "should throw exception with message 'Failed to update invoice with id: 1'"() {
+        when:
+        wrongPathDatabase.update(1, updatedInvoice)
+
+        then:
+        def exception = thrown(RuntimeException)
+        exception.message == "Failed to get invoice with id: 1"
+    }
+
+    def "should delete invoice"() {
+        given:
+        FileBasedDatabase.save(invoice)
+        FileBasedDatabase.save(updatedInvoice)
+
+        when:
+        FileBasedDatabase.delete(2)
+
+        then:
+        FileBasedDatabase.getById(2) == Optional.empty()
+    }
+
+    def "should throw exception with message 'Failed to delete invoice with id: 1'"() {
+        when:
+        wrongPathDatabase.delete(1)
+
+        then:
+        def exception = thrown(RuntimeException)
         exception.message == "Deleting invoice failed"
     }
-
-
 }
