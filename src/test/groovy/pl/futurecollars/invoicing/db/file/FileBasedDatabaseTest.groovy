@@ -56,7 +56,7 @@ class FileBasedDatabaseTest extends Specification {
 
         then:
         result.isPresent()
-        result.toString().contains("Optional[Invoice(id=1, date=2022-08-27, buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
+        result.toString().contains("Optional[Invoice(id=1, date=2022-08-30, buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
     def "should throw exception with message 'Failed to get invoice with id: 1"() {
@@ -81,16 +81,16 @@ class FileBasedDatabaseTest extends Specification {
         then:
         result.isPresent()
         result.toString().contains("id=1")
-        result.toString().contains("Optional[Invoice(id=1, date=2022-08-27, buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
+        result.toString().contains("Optional[Invoice(id=1, date=2022-08-30, buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
-    def "should throw exception with message 'Id 34 does not exist'"() {
+    def "should throw exception with message 'Invoice with id: 34 could not be found'"() {
         when:
         FileBasedDatabase.update(34, updatedInvoice)
 
         then:
         def exception = thrown(RuntimeException)
-        exception.message == "Invoice id: 34 doesn't exist"
+        exception.message == "Invoice with id: 34 could not be found"
     }
 
     def "should throw exception with message 'Failed to update invoice with id: 1'"() {
@@ -99,7 +99,7 @@ class FileBasedDatabaseTest extends Specification {
 
         then:
         def exception = thrown(RuntimeException)
-        exception.message == "Failed to get invoice with id: 1"
+        exception.message == "Updating invoice failed for id: 1"
     }
 
     def "should delete invoice"() {
@@ -114,7 +114,7 @@ class FileBasedDatabaseTest extends Specification {
         FileBasedDatabase.getById(2) == Optional.empty()
     }
 
-    def "should throw exception with message 'Failed to delete invoice with id: 1'"() {
+    def "should throw exception with message 'Deleting invoice failed'"() {
         when:
         wrongPathDatabase.delete(1)
 

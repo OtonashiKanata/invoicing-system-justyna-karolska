@@ -3,7 +3,6 @@ package pl.futurecollars.invoicing.db.file;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,7 +23,7 @@ public class FileBasedDatabase implements Database {
   @Override
   public int save(Invoice invoice) {
     try {
-      invoice.setId(idService.getId());
+      invoice.setId(idService.getNextIdAndIncrement());
       filesService.appendLineToFile(invoicesPath, jsonService.objectToString(invoice));
 
       return invoice.getId();
@@ -60,37 +59,41 @@ public class FileBasedDatabase implements Database {
   }
 
   @Override
-  public void update(int id, Invoice updatedInvoice) {
-    if (getById(id).isEmpty()) {
-      throw new IllegalArgumentException("Invoice id: " + id + " doesn't exist");
-    }
-    updatedInvoice.setId(id);
-    String updatedInvoiceAsString = jsonService.objectToString(updatedInvoice).trim();
-
+  public void update(int id, Invoice data) {
     try {
-      String invoicesAsString = Files.readAllLines(invoicesPath)
+      List<String> allLines = filesService.readAllLines(invoicesPath);
+      String invoiceToUpdateAsJson = allLines
           .stream()
-          .map(invoice -> updatingInvoice(invoice, id, updatedInvoiceAsString))
-          .collect(Collectors.joining("\n"));
-      Files.writeString(invoicesPath, invoicesAsString, StandardOpenOption.TRUNCATE_EXISTING);
-    } catch (IOException exception) {
-      throw new RuntimeException("Updating invoice failed");
-    }
-  }
+          .filter(line -> containsId(line, id))
+          .findFirst()
+          .orElseThrow(() -> new RuntimeException("Invoice with id: " + id + " could not be found"));
 
-  private String updatingInvoice(String oldInvoiceAsString, int id, String updatedInvoiceAsString) {
-    return containsId(oldInvoiceAsString, id) ? updatedInvoiceAsString : oldInvoiceAsString;
+      allLines.remove(invoiceToUpdateAsJson);
+      Invoice invoiceToUpdate = jsonService.stringToObject(invoiceToUpdateAsJson, Invoice.class);
+
+      invoiceToUpdate.setDate(data.getDate());
+      invoiceToUpdate.setBuyer(data.getBuyer());
+      invoiceToUpdate.setSeller(data.getSeller());
+      invoiceToUpdate.setEntries(data.getEntries());
+
+      String updatedInvoiceAsJson = jsonService.objectToString(invoiceToUpdate);
+      allLines.add(updatedInvoiceAsJson);
+      filesService.writeLinesToFile(invoicesPath, allLines);
+    } catch (IOException exception) {
+      throw new RuntimeException("Updating invoice failed for id: " + id, exception);
+    }
+
   }
 
   @Override
   public void delete(int id) {
     try {
-      String reducedInvoices = Files.readAllLines(invoicesPath)
+      var updatedList = filesService.readAllLines(invoicesPath)
           .stream()
           .filter(line -> !containsId(line, id))
-          .collect(Collectors.joining("\n"));
+          .collect(Collectors.toList());
 
-      Files.writeString(invoicesPath, reducedInvoices, StandardOpenOption.TRUNCATE_EXISTING);
+      filesService.writeLinesToFile(invoicesPath, updatedList);
     } catch (IOException exception) {
       throw new RuntimeException("Deleting invoice failed");
     }

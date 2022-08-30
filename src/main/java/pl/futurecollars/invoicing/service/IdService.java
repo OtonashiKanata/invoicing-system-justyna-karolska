@@ -1,10 +1,9 @@
 package pl.futurecollars.invoicing.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 import pl.futurecollars.invoicing.db.file.FilesService;
 
 public class IdService {
@@ -18,10 +17,11 @@ public class IdService {
     this.filesService = filesService;
 
     try {
-      File idFile = new File(String.valueOf(idFilePath));
-      if (!idFile.exists() || Files.readString(Paths.get(String.valueOf(idFilePath))).isEmpty()) {
-        idFile.createNewFile();
-        Files.writeString(idFilePath, String.valueOf(id));
+      List<String> lines = filesService.readAllLines(idFilePath);
+      if (lines.isEmpty()) {
+        filesService.writeToFile(idFilePath, "1");
+      } else {
+        id = Integer.parseInt(lines.get(0));
       }
     } catch (IOException exception) {
       System.out.println("Creation of idFile failed");
@@ -29,19 +29,9 @@ public class IdService {
     }
   }
 
-  public int getId() {
+  public int getNextIdAndIncrement() {
     try {
-      String actualId = Files.readString(idFilePath);
-      return Integer.parseInt(actualId);
-    } catch (IOException exception) {
-      exception.printStackTrace();
-    }
-    return id;
-  }
-
-  public int setId() {
-    try {
-      Files.writeString(idFilePath, String.valueOf(getId() + 1));
+      Files.writeString(idFilePath, String.valueOf(id + 1));
     } catch (IOException exception) {
       exception.printStackTrace();
     }
