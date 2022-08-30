@@ -24,8 +24,8 @@ public class IdService {
         id = Integer.parseInt(lines.get(0));
       }
     } catch (IOException exception) {
-      System.out.println("Creation of idFile failed");
-      exception.printStackTrace();
+      throw new RuntimeException("Creation of idFile failed", exception);
+
     }
   }
 
@@ -33,7 +33,7 @@ public class IdService {
     try {
       Files.writeString(idFilePath, String.valueOf(id + 1));
     } catch (IOException exception) {
-      exception.printStackTrace();
+      throw new RuntimeException("Failed to read id file", exception);
     }
     return id++;
 
