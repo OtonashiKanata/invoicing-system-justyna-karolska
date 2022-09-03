@@ -24,6 +24,11 @@ repositories {
 }
 
 dependencies {
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.1'
+
     // Use the latest Groovy version for Spock testing
     testImplementation 'org.codehaus.groovy:groovy:3.0.10'
 
