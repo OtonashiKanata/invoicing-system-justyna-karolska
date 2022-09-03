@@ -68,7 +68,8 @@ class InMemoryDatabaseTest extends Specification {
 
     def "deleting not existing invoice is not causing any error"() {
         expect:
-        database.delete(69);
+        database.delete(69) == Optional.empty()
+
     }
 
     def "it's possible to update the invoice"() {

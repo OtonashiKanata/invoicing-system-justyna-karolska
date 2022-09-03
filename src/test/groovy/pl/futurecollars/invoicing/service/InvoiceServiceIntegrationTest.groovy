@@ -70,7 +70,7 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "deleting not existing invoice is not causing any error"() {
         expect:
-        service.delete(69);
+        service.delete(69) == Optional.empty();
     }
 
     def "it's possible to update the invoice"() {
