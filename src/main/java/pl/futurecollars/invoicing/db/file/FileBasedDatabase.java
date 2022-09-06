@@ -59,8 +59,7 @@ public class FileBasedDatabase implements Database {
   }
 
   @Override
-  public Optional<Invoice> update(int id, Invoice data) {
-    Optional<Invoice> toUpdate = getById(id);
+  public void update(int id, Invoice data) {
     try {
       List<String> allLines = filesService.readAllLines(invoicesPath);
       String invoiceToUpdateAsJson = allLines
@@ -81,7 +80,6 @@ public class FileBasedDatabase implements Database {
       allLines.add(updatedInvoiceAsJson);
       filesService.writeLinesToFile(invoicesPath, allLines);
 
-      return toUpdate;
     } catch (IOException exception) {
       throw new RuntimeException("Updating invoice failed for id: " + id, exception);
     }
@@ -89,8 +87,7 @@ public class FileBasedDatabase implements Database {
   }
 
   @Override
-  public Optional<Invoice> delete(int id) {
-    Optional<Invoice> toDelete = getById(id);
+  public void delete(int id) {
     try {
       var updatedList = filesService.readAllLines(invoicesPath)
           .stream()
@@ -99,7 +96,6 @@ public class FileBasedDatabase implements Database {
 
       filesService.writeLinesToFile(invoicesPath, updatedList);
 
-      return toDelete;
     } catch (IOException exception) {
       throw new RuntimeException("Deleting invoice failed");
     }

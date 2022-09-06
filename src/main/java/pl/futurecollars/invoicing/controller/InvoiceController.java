@@ -39,16 +39,20 @@ public class InvoiceController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteById(@PathVariable int id) {
-    return invoiceService.delete(id)
-        .map(name -> ResponseEntity.noContent().build())
-        .orElse(ResponseEntity.notFound().build());
+    if (invoiceService.delete(id)) {
+      return ResponseEntity.noContent().build();
+    } else {
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<?> update(@PathVariable int id, @RequestBody Invoice invoice) {
-    return invoiceService.update(id, invoice)
-        .map(name -> ResponseEntity.noContent().build())
-        .orElse(ResponseEntity.notFound().build());
+    if (invoiceService.update(id, invoice)) {
+      return ResponseEntity.ok().build();
+    } else {
+      return ResponseEntity.notFound().build();
+    }
   }
-
 }
+
