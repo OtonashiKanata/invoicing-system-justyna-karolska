@@ -39,11 +39,13 @@ public class InMemoryDatabase implements Database {
 
     updatedInvoice.setId(id);
     invoices.put(id, updatedInvoice);
+
   }
 
   @Override
   public void delete(int id) {
     invoices.remove(id);
+
   }
 }
 

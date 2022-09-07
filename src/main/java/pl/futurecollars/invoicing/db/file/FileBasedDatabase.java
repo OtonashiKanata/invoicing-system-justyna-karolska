@@ -79,6 +79,7 @@ public class FileBasedDatabase implements Database {
       String updatedInvoiceAsJson = jsonService.objectToString(invoiceToUpdate);
       allLines.add(updatedInvoiceAsJson);
       filesService.writeLinesToFile(invoicesPath, allLines);
+
     } catch (IOException exception) {
       throw new RuntimeException("Updating invoice failed for id: " + id, exception);
     }
@@ -94,12 +95,13 @@ public class FileBasedDatabase implements Database {
           .collect(Collectors.toList());
 
       filesService.writeLinesToFile(invoicesPath, updatedList);
+
     } catch (IOException exception) {
       throw new RuntimeException("Deleting invoice failed");
     }
   }
 
-  private boolean containsId(String line, long id) {
+  private boolean containsId(String line, int id) {
     return line.contains("\"id\":" + id + ",");
 
   }

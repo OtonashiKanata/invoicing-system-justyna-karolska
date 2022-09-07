@@ -68,7 +68,8 @@ class InMemoryDatabaseTest extends Specification {
 
     def "deleting not existing invoice is not causing any error"() {
         expect:
-        database.delete(69);
+        database.delete(32)
+
     }
 
     def "it's possible to update the invoice"() {
@@ -84,11 +85,11 @@ class InMemoryDatabaseTest extends Specification {
 
     def "updating not existing invoice throws exception"() {
         when:
-        database.update(69, invoices.get(1))
+        database.update(32, invoices.get(1))
 
         then:
         def ex = thrown(IllegalArgumentException)
-        ex.message == "Id 69 does not exist"
+        ex.message == "Id 32 does not exist"
     }
 
 
