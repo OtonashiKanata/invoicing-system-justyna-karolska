@@ -12,7 +12,7 @@ public class IdService {
   private final FilesService filesService;
   private int id = 1;
 
-  IdService(Path idFilePath, FilesService filesService) {
+  public IdService(Path idFilePath, FilesService filesService) {
     this.idFilePath = idFilePath;
     this.filesService = filesService;
 
