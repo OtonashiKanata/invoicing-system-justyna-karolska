@@ -62,7 +62,7 @@ class FileBasedDatabaseTest extends Specification {
 
         then:
         result.isPresent()
-        result.toString().contains("Optional[Invoice(id=1, date=2022-09-06, buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
+        result.toString().contains("Optional[Invoice(id=1, date=2022-09-12, buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
     def "should throw exception with message 'Failed to get invoice with id: 1"() {
@@ -87,7 +87,7 @@ class FileBasedDatabaseTest extends Specification {
         then:
         result.isPresent()
         result.toString().contains("id=1")
-        result.toString().contains("Optional[Invoice(id=1, date=2022-09-06, buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
+        result.toString().contains("Optional[Invoice(id=1, date=2022-09-12, buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
     def "should throw exception with message 'Invoice with id: 34 could not be found'"() {
