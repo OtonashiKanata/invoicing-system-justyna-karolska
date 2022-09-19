@@ -1,7 +1,6 @@
 package pl.futurecollars.invoicing.db.file;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +36,8 @@ public class FileBasedDatabase implements Database {
     try {
       return filesService.readAllLines(invoicesPath)
           .stream()
-          .filter(line -> containsId(line, id))
           .map(line -> jsonService.stringToObject(line, Invoice.class))
+          .filter(object -> object.getId() == id)
           .findFirst();
     } catch (IOException exception) {
       throw new RuntimeException("Failed to get invoice with id: " + id, exception);
@@ -49,7 +48,7 @@ public class FileBasedDatabase implements Database {
   @Override
   public List<Invoice> getAll() {
     try {
-      return Files.readAllLines(invoicesPath)
+      return filesService.readAllLines(invoicesPath)
           .stream()
           .map(line -> jsonService.stringToObject(line, Invoice.class))
           .collect(Collectors.toList());
@@ -64,7 +63,7 @@ public class FileBasedDatabase implements Database {
       List<String> allLines = filesService.readAllLines(invoicesPath);
       String invoiceToUpdateAsJson = allLines
           .stream()
-          .filter(line -> containsId(line, id))
+          .filter(line -> jsonService.stringToObject(line, Invoice.class).getId() == id)
           .findFirst()
           .orElseThrow(() -> new RuntimeException("Invoice with id: " + id + " could not be found"));
 
@@ -91,7 +90,7 @@ public class FileBasedDatabase implements Database {
     try {
       var updatedList = filesService.readAllLines(invoicesPath)
           .stream()
-          .filter(line -> !containsId(line, id))
+          .filter(line -> jsonService.stringToObject(line, Invoice.class).getId() != id)
           .collect(Collectors.toList());
 
       filesService.writeLinesToFile(invoicesPath, updatedList);
@@ -99,10 +98,5 @@ public class FileBasedDatabase implements Database {
     } catch (IOException exception) {
       throw new RuntimeException("Deleting invoice failed");
     }
-  }
-
-  private boolean containsId(String line, int id) {
-    return line.contains("\"id\":" + id + ",");
-
   }
 }

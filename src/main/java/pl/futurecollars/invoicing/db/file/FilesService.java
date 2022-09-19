@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.logging.log4j.util.Strings;
 
 public class FilesService {
 
@@ -22,6 +24,6 @@ public class FilesService {
   }
 
   public List<String> readAllLines(Path path) throws IOException {
-    return Files.readAllLines(path, StandardCharsets.ISO_8859_1);
+    return Files.readAllLines(path, StandardCharsets.ISO_8859_1).stream().filter(Strings::isNotBlank).collect(Collectors.toList());
   }
 }
