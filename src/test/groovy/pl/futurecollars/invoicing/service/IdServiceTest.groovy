@@ -9,6 +9,7 @@ import java.nio.file.Path
 class IdServiceTest extends Specification {
 
     private Path nextIdDbPath = File.createTempFile('nextId', '.txt').toPath()
+    private Path nextIdDbPathWrong = File.createTempFile('nnn', '.txt').toPath()
 
     def "next id starts from 1 if file was empty"() {
         given:
@@ -28,6 +29,7 @@ class IdServiceTest extends Specification {
         and:
         3L == idService.getNextIdAndIncrement()
         ['4'] == Files.readAllLines(nextIdDbPath)
+
     }
 
     def "if file was not empty, next id starts from last number"() {

@@ -12,6 +12,7 @@ import spock.lang.Specification
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.text.SimpleDateFormat
 
 class FileBasedDatabaseTest extends Specification {
 
@@ -45,6 +46,9 @@ class FileBasedDatabaseTest extends Specification {
     }
 
     def "should throw exception with message 'Failed to save invoice'"() {
+
+
+
         when:
         wrongPathDatabase.save(invoice)
 
@@ -56,13 +60,20 @@ class FileBasedDatabaseTest extends Specification {
     }
 
     def "should get invoice by id"() {
+        given:
+        def date = new Date()
+        def sdf = new SimpleDateFormat("yyyy-MM-dd")
+        def formattedDate = sdf.format(date)
+
         when:
         FileBasedDatabase.save(invoice)
         def result = FileBasedDatabase.getById(1)
 
         then:
         result.isPresent()
-        result.toString().contains("Optional[Invoice(id=1, date=2022-09-12, buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
+        println formattedDate
+        //result.toString().contains(formattedDate)
+        result.toString().contains("Optional[Invoice(id=1, date=" + formattedDate + ", buyer=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), seller=Company(taxIdentificationNumber=1111111111, address=u200 Industrial Ave, 1 Long Beach, CA 90803, name=Stark Industries 1 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 1, price=1000, vatValue=80.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
     def "should throw exception with message 'Failed to get invoice with id: 1"() {
@@ -79,6 +90,9 @@ class FileBasedDatabaseTest extends Specification {
     def "should update invoice"() {
         given:
         FileBasedDatabase.save(invoice)
+        def date = new Date()
+        def sdf = new SimpleDateFormat("yyyy-MM-dd")
+        def formattedDate = sdf.format(date)
 
         when:
         FileBasedDatabase.update(1, updatedInvoice)
@@ -87,7 +101,7 @@ class FileBasedDatabaseTest extends Specification {
         then:
         result.isPresent()
         result.toString().contains("id=1")
-        result.toString().contains("Optional[Invoice(id=1, date=2022-09-12, buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
+        result.toString().contains("Optional[Invoice(id=1, date=" + formattedDate + ", buyer=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), seller=Company(taxIdentificationNumber=2222222222, address=u200 Industrial Ave, 2 Long Beach, CA 90803, name=Stark Industries 2 Sp. z o.o), entries=[InvoiceEntry(description=Building Ironman 2, price=2000, vatValue=160.0, vatRate=Vat.VAT_8(rate=8))])]")
     }
 
     def "should throw exception with message 'Invoice with id: 34 could not be found'"() {
